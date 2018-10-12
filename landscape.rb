@@ -21,7 +21,7 @@ class Landscape
     x_max = @height_map[0].length - 1
     y_min = 0
     y_max = @height_map.length - 1
-    survey[ :center ] = @height_map[y][x] if ( y >= y_min && y <= y_max ) && ( x >= x_min && x <= x_max )
+    this_height = @height_map[y][x] if ( y >= y_min && y <= y_max ) && ( x >= x_min && x <= x_max )
     survey[ :north ] = @height_map[y-1][x] if y > y_min
     survey[ :north_east ] = @height_map[y-1][x+1] if y > y_min && x < x_max
     survey[ :east ] = @height_map[y][x+1] if x < x_max
@@ -30,7 +30,9 @@ class Landscape
     survey[ :south_west ] = @height_map[y+1][x-1] if y < y_max && x > x_min
     survey[ :west ] = @height_map[y][x-1] if x > x_min
     survey[ :north_west ] = @height_map[y-1][x-1] if y > y_min && x > x_min
-    survey
+    # Note_20181011_1302: Initially this reported absolute height values, which is wrong as estimates turn out wildly to big in that case. Intuitively it is also not correct: researchers estimate a relative leap to where they are, there is no such thing I think as absolute epistemological value. Making this error was useful though. Using relative values results in new behavior: having to decide what to do if you're on a local optimum (you can only go down), and going down can result in deadlock: going up again to the same local optimum, and down again, endlessly. This behavior might have puzzled me I think. Now I get to acknowledge it before it happens.
+    # Map heights to relative heights (all a researcher can see)
+    survey.each { |direction, height| survey[ direction ] = height - this_height }
   end
 
   def xyz_map

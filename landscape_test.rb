@@ -16,41 +16,54 @@ class TestLandscape < Test::Unit::TestCase
     assert_equal( 9, @landscape.height_map[0].length )
   end
 
-  def test_survey_heights
+  def test_surveying
     surveyed_heights = @landscape.survey_heights( x: 0, y: 0 )
     assert_equal( nil, surveyed_heights[ :north_east ] )
     assert_equal( nil, surveyed_heights[ :north ] )
     assert_equal( nil, surveyed_heights[ :north_west ] )
     assert_equal( nil, surveyed_heights[ :west ] )
     assert_equal( nil, surveyed_heights[ :south_west ] )
-    assert( surveyed_heights[ :south ] > 0 )
-    assert( surveyed_heights[ :south_east ] > 0 )
-    assert( surveyed_heights[ :east  ] > 0 )
+    assert( surveyed_heights[ :south ] != nil )
+    assert( surveyed_heights[ :south_east ] != nil )
+    assert( surveyed_heights[ :east  ] != nil )
+  end
+
+  def test_survey_heights
+    @landscape.height_map = @mock_landscape
+    surveyed_heights = @landscape.survey_heights( x: 0, y: 0 )
+    assert_equal( nil, surveyed_heights[ :north_east ] )
+    assert_equal( nil, surveyed_heights[ :north ] )
+    assert_equal( nil, surveyed_heights[ :north_west ] )
+    assert_equal( nil, surveyed_heights[ :west ] )
+    assert_equal( nil, surveyed_heights[ :south_west ] )
+    assert( surveyed_heights[ :south ] == 3 )
+    assert( surveyed_heights[ :south_east ] == 4 )
+    assert( surveyed_heights[ :east  ] == 1 )
   end
 
   def test_surveyed_tiles
     @landscape.height_map = @mock_landscape
     surveyed_heights = @landscape.survey_heights( x: 1, y: 1 )
-    assert_equal( @mock_landscape[1][1], surveyed_heights[ :center ] )
-    assert_equal( @mock_landscape[0][1], surveyed_heights[ :north ] )
-    assert_equal( @mock_landscape[0][2], surveyed_heights[ :north_east ] )
-    assert_equal( @mock_landscape[1][2], surveyed_heights[ :east ] )
-    assert_equal( @mock_landscape[2][2], surveyed_heights[ :south_east ] )
-    assert_equal( @mock_landscape[2][1], surveyed_heights[ :south ] )
-    assert_equal( @mock_landscape[2][0], surveyed_heights[ :south_west ] )
-    assert_equal( @mock_landscape[1][0], surveyed_heights[ :west ] )
-    assert_equal( @mock_landscape[0][0], surveyed_heights[ :north_west ] )
+    current_height = @mock_landscape[1][1]
+    assert_equal( @mock_landscape[0][1] - current_height, surveyed_heights[ :north ] )
+    assert_equal( @mock_landscape[0][2] - current_height, surveyed_heights[ :north_east ] )
+    assert_equal( @mock_landscape[1][2] - current_height, surveyed_heights[ :east ] )
+    assert_equal( @mock_landscape[2][2] - current_height, surveyed_heights[ :south_east ] )
+    assert_equal( @mock_landscape[2][1] - current_height, surveyed_heights[ :south ] )
+    assert_equal( @mock_landscape[2][0] - current_height, surveyed_heights[ :south_west ] )
+    assert_equal( @mock_landscape[1][0] - current_height, surveyed_heights[ :west ] )
+    assert_equal( @mock_landscape[0][0] - current_height, surveyed_heights[ :north_west ] )
   end
 
   def test_no_neighbors_nw
     @landscape.height_map = @mock_landscape
     surveyed_heights = @landscape.survey_heights( x: 0, y: 0 )
-    assert_equal( @mock_landscape[0][0], surveyed_heights[ :center ] )
+    current_height = @mock_landscape[0][0]
     assert_equal( nil, surveyed_heights[ :north ] )
     assert_equal( nil, surveyed_heights[ :north_east ] )
-    assert_equal( @mock_landscape[0][1], surveyed_heights[ :east ] )
-    assert_equal( @mock_landscape[1][1], surveyed_heights[ :south_east ] )
-    assert_equal( @mock_landscape[1][0], surveyed_heights[ :south ] )
+    assert_equal( @mock_landscape[0][1] - current_height, surveyed_heights[ :east ] )
+    assert_equal( @mock_landscape[1][1] - current_height, surveyed_heights[ :south_east ] )
+    assert_equal( @mock_landscape[1][0] - current_height, surveyed_heights[ :south ] )
     assert_equal( nil, surveyed_heights[ :south_west ] )
     assert_equal( nil, surveyed_heights[ :west ] )
     assert_equal( nil, surveyed_heights[ :north_west ] )
@@ -59,38 +72,38 @@ class TestLandscape < Test::Unit::TestCase
   def test_no_neighbors_ne
     @landscape.height_map = @mock_landscape
     surveyed_heights = @landscape.survey_heights( x: 2, y: 0 )
-    assert_equal( @mock_landscape[0][2], surveyed_heights[ :center ] )
+    current_height = @mock_landscape[0][2]
     assert_equal( nil, surveyed_heights[ :north ] )
     assert_equal( nil, surveyed_heights[ :north_east ] )
     assert_equal( nil, surveyed_heights[ :east ] )
     assert_equal( nil, surveyed_heights[ :south_east ] )
-    assert_equal( @mock_landscape[1][2], surveyed_heights[ :south ] )
-    assert_equal( @mock_landscape[1][1], surveyed_heights[ :south_west ] )
-    assert_equal( @mock_landscape[0][1], surveyed_heights[ :west ] )
+    assert_equal( @mock_landscape[1][2] - current_height, surveyed_heights[ :south ] )
+    assert_equal( @mock_landscape[1][1] - current_height, surveyed_heights[ :south_west ] )
+    assert_equal( @mock_landscape[0][1] - current_height, surveyed_heights[ :west ] )
     assert_equal( nil, surveyed_heights[ :north_west ] )
   end
 
   def test_no_neighbors_se
     @landscape.height_map = @mock_landscape
     surveyed_heights = @landscape.survey_heights( x: 2, y: 2 )
-    assert_equal( @mock_landscape[2][2], surveyed_heights[ :center ] )
-    assert_equal( @mock_landscape[1][2], surveyed_heights[ :north ] )
+    current_height = @mock_landscape[2][2]
+    assert_equal( @mock_landscape[1][2] - current_height, surveyed_heights[ :north ] )
     assert_equal( nil, surveyed_heights[ :north_east ] )
     assert_equal( nil, surveyed_heights[ :east ] )
     assert_equal( nil, surveyed_heights[ :south_east ] )
     assert_equal( nil, surveyed_heights[ :south ] )
     assert_equal( nil, surveyed_heights[ :south_west ] )
-    assert_equal( @mock_landscape[2][1], surveyed_heights[ :west ] )
-    assert_equal( @mock_landscape[1][1], surveyed_heights[ :north_west ] )
+    assert_equal( @mock_landscape[2][1] - current_height, surveyed_heights[ :west ] )
+    assert_equal( @mock_landscape[1][1] - current_height, surveyed_heights[ :north_west ] )
   end
 
   def test_no_neighbors_sw
     @landscape.height_map = @mock_landscape
     surveyed_heights = @landscape.survey_heights( x: 0, y: 2 )
-    assert_equal( @mock_landscape[2][0], surveyed_heights[ :center ] )
-    assert_equal( @mock_landscape[1][0], surveyed_heights[ :north ] )
-    assert_equal( @mock_landscape[1][1], surveyed_heights[ :north_east ] )
-    assert_equal( @mock_landscape[2][1], surveyed_heights[ :east ] )
+    current_height = @mock_landscape[2][0]
+    assert_equal( @mock_landscape[1][0] - current_height, surveyed_heights[ :north ] )
+    assert_equal( @mock_landscape[1][1] - current_height, surveyed_heights[ :north_east ] )
+    assert_equal( @mock_landscape[2][1] - current_height, surveyed_heights[ :east ] )
     assert_equal( nil, surveyed_heights[ :south_east ] )
     assert_equal( nil, surveyed_heights[ :south ] )
     assert_equal( nil, surveyed_heights[ :south_west ] )
@@ -101,54 +114,54 @@ class TestLandscape < Test::Unit::TestCase
   def test_no_neighbors_n
     @landscape.height_map = @mock_landscape
     surveyed_heights = @landscape.survey_heights( x: 1, y: 0 )
-    assert_equal( @mock_landscape[0][1], surveyed_heights[ :center ] )
+    current_height = @mock_landscape[0][1]
     assert_equal( nil, surveyed_heights[ :north ] )
     assert_equal( nil, surveyed_heights[ :north_east ] )
-    assert_equal( @mock_landscape[0][2], surveyed_heights[ :east ] )
-    assert_equal( @mock_landscape[1][2], surveyed_heights[ :south_east ] )
-    assert_equal( @mock_landscape[1][1], surveyed_heights[ :south ] )
-    assert_equal( @mock_landscape[1][0], surveyed_heights[ :south_west ] )
-    assert_equal( @mock_landscape[0][0], surveyed_heights[ :west ] )
+    assert_equal( @mock_landscape[0][2] - current_height, surveyed_heights[ :east ] )
+    assert_equal( @mock_landscape[1][2] - current_height, surveyed_heights[ :south_east ] )
+    assert_equal( @mock_landscape[1][1] - current_height, surveyed_heights[ :south ] )
+    assert_equal( @mock_landscape[1][0] - current_height, surveyed_heights[ :south_west ] )
+    assert_equal( @mock_landscape[0][0] - current_height, surveyed_heights[ :west ] )
     assert_equal( nil, surveyed_heights[ :north_west ] )
   end
 
   def test_no_neighbors_e
     @landscape.height_map = @mock_landscape
     surveyed_heights = @landscape.survey_heights( x: 2, y: 1 )
-    assert_equal( @mock_landscape[1][2], surveyed_heights[ :center ] )
-    assert_equal( @mock_landscape[0][2], surveyed_heights[ :north ] )
+    current_height = @mock_landscape[1][2]
+    assert_equal( @mock_landscape[0][2] - current_height, surveyed_heights[ :north ] )
     assert_equal( nil, surveyed_heights[ :north_east ] )
     assert_equal( nil, surveyed_heights[ :east ] )
     assert_equal( nil, surveyed_heights[ :south_east ] )
-    assert_equal( @mock_landscape[2][2], surveyed_heights[ :south ] )
-    assert_equal( @mock_landscape[2][1], surveyed_heights[ :south_west ] )
-    assert_equal( @mock_landscape[1][1], surveyed_heights[ :west ] )
-    assert_equal( @mock_landscape[0][1], surveyed_heights[ :north_west ] )
+    assert_equal( @mock_landscape[2][2] - current_height, surveyed_heights[ :south ] )
+    assert_equal( @mock_landscape[2][1] - current_height, surveyed_heights[ :south_west ] )
+    assert_equal( @mock_landscape[1][1] - current_height, surveyed_heights[ :west ] )
+    assert_equal( @mock_landscape[0][1] - current_height, surveyed_heights[ :north_west ] )
   end
 
   def test_no_neighbors_s
     @landscape.height_map = @mock_landscape
     surveyed_heights = @landscape.survey_heights( x: 1, y: 2 )
-    assert_equal( @mock_landscape[2][1], surveyed_heights[ :center ] )
-    assert_equal( @mock_landscape[1][1], surveyed_heights[ :north ] )
-    assert_equal( @mock_landscape[1][2], surveyed_heights[ :north_east ] )
-    assert_equal( @mock_landscape[2][2], surveyed_heights[ :east ] )
+    current_height = @mock_landscape[2][1]
+    assert_equal( @mock_landscape[1][1] - current_height, surveyed_heights[ :north ] )
+    assert_equal( @mock_landscape[1][2] - current_height, surveyed_heights[ :north_east ] )
+    assert_equal( @mock_landscape[2][2] - current_height, surveyed_heights[ :east ] )
     assert_equal( nil, surveyed_heights[ :south_east ] )
     assert_equal( nil, surveyed_heights[ :south ] )
     assert_equal( nil, surveyed_heights[ :south_west ] )
-    assert_equal( @mock_landscape[2][0], surveyed_heights[ :west ] )
-    assert_equal( @mock_landscape[1][0], surveyed_heights[ :north_west ] )
+    assert_equal( @mock_landscape[2][0] - current_height, surveyed_heights[ :west ] )
+    assert_equal( @mock_landscape[1][0] - current_height, surveyed_heights[ :north_west ] )
   end
 
   def test_no_neighbors_w
     @landscape.height_map = @mock_landscape
     surveyed_heights = @landscape.survey_heights( x: 0, y: 1 )
-    assert_equal( @mock_landscape[1][0], surveyed_heights[ :center ] )
-    assert_equal( @mock_landscape[0][0], surveyed_heights[ :north ] )
-    assert_equal( @mock_landscape[0][1], surveyed_heights[ :north_east ] )
-    assert_equal( @mock_landscape[1][1], surveyed_heights[ :east ] )
-    assert_equal( @mock_landscape[2][1], surveyed_heights[ :south_east ] )
-    assert_equal( @mock_landscape[2][0], surveyed_heights[ :south ] )
+    current_height = @mock_landscape[1][0]
+    assert_equal( @mock_landscape[0][0] - current_height, surveyed_heights[ :north ] )
+    assert_equal( @mock_landscape[0][1] - current_height, surveyed_heights[ :north_east ] )
+    assert_equal( @mock_landscape[1][1] - current_height, surveyed_heights[ :east ] )
+    assert_equal( @mock_landscape[2][1] - current_height, surveyed_heights[ :south_east ] )
+    assert_equal( @mock_landscape[2][0] - current_height, surveyed_heights[ :south ] )
     assert_equal( nil, surveyed_heights[ :south_west ] )
     assert_equal( nil, surveyed_heights[ :west ] )
     assert_equal( nil, surveyed_heights[ :north_west ] )

@@ -24,17 +24,18 @@ class TestAgent < Test::Unit::TestCase
   def test_decide
     landscape = Landscape.new( size: 9, height_seed: 100 )
     agent = Agent.new( name: "Bernard", x: 2, y: 2, landscape: landscape )
-    directions = [ :center, :north, :north_east, :east, :south_east, :south, :south_west, :west, :north_west ]
+    directions = [ :north, :north_east, :east, :south_east, :south, :south_west, :west, :north_west ]
     100.times {
       decision = agent.decide
-      assert( decision[ :estimate ] > landscape.survey_heights( x: 2, y: 2 )[ :center ] )
+      assert( decision[ :estimate ] > 0 )
       assert( directions.include? decision[ :direction ] )
     }
   end
 
   def test_moves
     agent = Agent.new( name: "Bernard", x: 1, y: 1 )
-    agent.move( direction: :center )
+    assert_raise { agent.move( direction: :nowhere ) }
+    assert_raise { agent.move }
     assert_equal( 1, agent.x )
     assert_equal( 1, agent.y )
     agent.move( direction: :north )
@@ -69,11 +70,7 @@ class TestAgent < Test::Unit::TestCase
     agent = Agent.new( name: "Bernard", x: 1, y: 1, landscape: landscape )
     decision = agent.decide
     agent.move( direction: decision[ :direction ] )
-    if decision[ :direction ] == :center
-      assert( agent.x == 1 && agent.y == 1 )
-    else
-      assert( agent.x != 1 || agent.y != 1 )
-    end
+    assert( agent.x != 1 || agent.y != 1 )
   end
 
 end

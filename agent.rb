@@ -36,22 +36,23 @@ class Agent
 
     # We ignore 'impossible' directions, i.e. off the map (nil). In a next version the world may be a sphere, but for now it is flat and we don't want our researchers to plummet from the edge.
     survey_heights = @landscape.survey_heights( x: @x, y: @y ).select { |direction, height| height != nil }
-    current_height = survey_heights.delete( :center )
     # Researchers don't see or know actual value or epistemological gain of a next level, they only can estimate.
     # Estimates can be as wrong from 0.25% of reality to 400% of said reality.
     estimates = survey_heights.map { |direction, height| [ direction, estimate_effort( tile_height: height ) ] }.to_h
     # next assumes a researcher only invests in directions that will 'up' his level
-    estimates = estimates.select  { |direction, estimate| estimate > current_height }
+    # 20181011_1320: You cannot do this, it results in deadlock in the case of a local optimum. In that case the only directions are down (less than 0) and ''estimates'' turns out nil. How do we solve this?
+    # * Possibility 1: Researcher that reaches a top, changes subject (i.e. gets parachuted somewhere else in the landscape)?
+    # * Possibility 2: 'Deinvest', accept a lower episteological gain to explore new directions. Problem: how long to get out of local optimum? Maybe at least as long as the path was you took to this local optimum?
+    # This problem also inspires thoughts about the epistemological landscape itself. It was random until now. But in practice a researcher is very seldom really done with a subject, there's always more to learn it seems. Subjects change because of this, but not radically mostly. Does this mean that the landscape as a whole needs  a direction of ever increasing epistemological value? Isn't that way too deterministic?
+    # * Possibility 3 (or maybe 2.5): you look for low ground in the vicinity in another direction. Equivalent to a researcher surmizing "What directions aren't researched much yet?" This requires I think a more sophisticated approach with an agent that has a sense of direction and doesn't budge at the first downgrade encountered. Only when time and time again the direction is down the researcher will change directions decidedly.
+    estimates = estimates.select  { |direction, estimate| estimate > 0 }
     estimates = estimates.sort_by { |direction, estimate| estimate }.to_h
     # researchers choose the tile that offers the smallest increase in height. That is: they are conservative in spenditure but expext a gain.
-    [ :direction, :estimate ].zip( estimates.find { |direction, estimate| estimate > current_height } ).to_h
+    [ :direction, :estimate ].zip( estimates.find { |direction, estimate| estimate > 0 } ).to_h
   end
 
-  def move( direction: :center )
+  def move( direction: )
     self.send "move_#{direction}"
-  end
-
-  def move_center
   end
 
   def move_north
