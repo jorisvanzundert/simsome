@@ -1,6 +1,6 @@
 class Agent
 
-  attr_reader :name, :x, :y
+  attr_reader :name, :x, :y, :path_data
 
   def initialize( name: nil, x: 0, y: 0, landscape: nil )
     # Instance variables
@@ -19,6 +19,8 @@ class Agent
     @x = x
     @y = y
     @landscape = landscape
+    @path_data = [ { :x => @x, :y => @y, :elevation => landscape.survey_elevation( agent: self ) } ]
+
   end
 
   def estimate_effort( tile_height: 0 )
@@ -34,6 +36,8 @@ class Agent
     # Let's go with a conservative attitude for now: the researcher picks the tile that has a the lowest value that is still higher than his own. Also: A researcher never goes back to work just done, so the tile that he just came from should be excluded. (We ignore this for now) However, a researcher may wrongly estimate another tile as higher while it is in reality lower (and can be work done already).
     # For a first implementation we also ignore the capacity bit and just let the researcher move towards the next tile that in his/her estimate is least higher than the current height.
 
+    # So, researchers choose the tile that offers the smallest increase in height. That is: they are conservative in spenditure but expext a gain.
+
     # We ignore 'impossible' directions, i.e. off the map (nil). In a next version the world may be a sphere, but for now it is flat and we don't want our researchers to plummet from the edge.
     survey_heights = @landscape.survey_heights( x: @x, y: @y ).select { |direction, height| height != nil }
     # Researchers don't see or know actual value or epistemological gain of a next level, they only can estimate.
@@ -45,14 +49,23 @@ class Agent
     # * Possibility 2: 'Deinvest', accept a lower episteological gain to explore new directions. Problem: how long to get out of local optimum? Maybe at least as long as the path was you took to this local optimum?
     # This problem also inspires thoughts about the epistemological landscape itself. It was random until now. But in practice a researcher is very seldom really done with a subject, there's always more to learn it seems. Subjects change because of this, but not radically mostly. Does this mean that the landscape as a whole needs  a direction of ever increasing epistemological value? Isn't that way too deterministic?
     # * Possibility 3 (or maybe 2.5): you look for low ground in the vicinity in another direction. Equivalent to a researcher surmizing "What directions aren't researched much yet?" This requires I think a more sophisticated approach with an agent that has a sense of direction and doesn't budge at the first downgrade encountered. Only when time and time again the direction is down the researcher will change directions decidedly.
-    estimates = estimates.select  { |direction, estimate| estimate > 0 }
+    # So I took this out to prevent local optimum deadlock: estimates = estimates.select  { |direction, estimate| estimate > 0 }, and I have the agent choose the value that is larger than 0 by the smallest amount, or the number closest to 0 if no such number exists. (Algorithm courtesy https://stackoverflow.com/questions/34896576/get-closest-value-of-a-number-from-array.)
+    estimate = choose_conservative( estimates: estimates )
+    # puts estimates
+    [ :direction, :estimate ].zip( estimate ).to_h
+  end
+
+  def choose_conservative( estimates: nil )
     estimates = estimates.sort_by { |direction, estimate| estimate }.to_h
-    # researchers choose the tile that offers the smallest increase in height. That is: they are conservative in spenditure but expext a gain.
-    [ :direction, :estimate ].zip( estimates.find { |direction, estimate| estimate > 0 } ).to_h
+    estimates = estimates.group_by { |direction, estimate| ( estimate <=> 0 ).to_s } # The .to_s is just to clarify we're talking hashes, not arrays, in the next line.
+    estimates = estimates[ "1" ] || estimates[ "-1" ].reverse
+    estimates.first
   end
 
   def move( direction: )
+    # So if you move you add to your epistemic memory. For now we add the *actual* (so not the estimated) epistemic *gain* in altiude, which is a measure for experience I guess.
     self.send "move_#{direction}"
+    @path_data << { :x => @x, :y => @y, :elevation => @landscape.survey_elevation( agent: self ) }
   end
 
   def move_north

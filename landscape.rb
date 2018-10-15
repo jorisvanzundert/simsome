@@ -3,13 +3,14 @@ require 'open3'
 
 class Landscape
 
-  attr_accessor :height_map
+  attr_accessor :height_map, :path_data_visualization_z_offset
 
   def initialize( name: nil, size: 129, height_seed: 400 )
     @map_name = name || File.basename(__FILE__).split('.')[0]
     fractal = PlasmaFractal.new( size: size, height_seed: height_seed )
     fractal.generate!
     @height_map = fractal.data
+    @path_data_visualization_z_offset = 20
   end
 
   def survey_elevation( agent: nil )
@@ -31,8 +32,8 @@ class Landscape
     survey[ :south_west ] = @height_map[y+1][x-1] if y < y_max && x > x_min
     survey[ :west ] = @height_map[y][x-1] if x > x_min
     survey[ :north_west ] = @height_map[y-1][x-1] if y > y_min && x > x_min
-    # Note_20181011_1302: Initially this reported absolute height values, which is wrong as estimates turn out wildly to big in that case. Intuitively it is also not correct: researchers estimate a relative leap to where they are, there is no such thing I think as absolute epistemological value. Making this error was useful though. Using relative values results in new behavior: having to decide what to do if you're on a local optimum (you can only go down), and going down can result in deadlock: going up again to the same local optimum, and down again, endlessly. This behavior might have puzzled me I think. Now I get to acknowledge it before it happens.
-    # Map heights to relative heights (all a researcher can see)
+    # Note_20181011_1302: Initially this reported absolute height values, which is wrong as estimates turn out wildly too big in that case. It is also incorrect intuitively: researchers estimate a relative leap to where they are, there is no such thing I think as absolute epistemological value. Making this error was useful though. Using relative values results in new behavior: having to decide what to do if you're on a local optimum (you can only go down), and going down can result in deadlock: going up again to the same local optimum, and down again, endlessly. This behavior might have puzzled me I think. Now I get to acknowledge it before it happens.
+    # Map heights to relative heights (all a researcher can see).
     survey.each { |direction, height| survey[ direction ] = height - this_height }
   end
 
@@ -84,20 +85,21 @@ class Landscape
     gnuplot( commands )
   end
 
-  def serialize( agent_path_data: nil, animate: false )
+  def serialize( agent: nil, animate: false )
     serialize_grid
     start_marker = nil
     end_marker = nil
-    if agent_path_data != nil
-      File.open( "tmp/agent_path.dat", 'w') { |file| file.write( agent_path_data.join( "\n" ) ) }
-      start_marker_xyz = agent_path_data[0].split( " " ).join( "," )
-      end_marker_xyz = agent_path_data[-1].split( " " ).join( "," )
-      set_start_marker = "      set object circle at #{start_marker_xyz} size 0.5 fc rgb '#2222ff' fs solid 1.0"
-      set_end_marker = "      set object circle at #{end_marker_xyz} size 0.5 fc rgb '#22ff22' fs solid 1.0"
+    path_data = agent.path_data
+    if agent != nil
+      serialize_path_data( path_data: path_data )
+      start_marker_xyz = path_data[0].map { |k,v| k==:elevation ? v + @path_data_visualization_z_offset : v }.join( "," )
+      end_marker_xyz = path_data[-1].map { |k,v| k==:elevation ? v + @path_data_visualization_z_offset : v }.join( "," )
+      set_start_marker = "set object circle at #{start_marker_xyz} size 0.5 fc rgb '#22ff22' fs solid 1.0"
+      set_end_marker = "      set object circle at #{end_marker_xyz} size 0.5 fc rgb '#2222ff' fs solid 1.0"
     end
     last_frame_index = nil
-    if animate && agent_path_data != nil
-      last_frame_index = agent_path_data.length - 1
+    if animate && agent != nil
+      last_frame_index = path_data.length - 1
       serialize_first_frame( set_start_marker: set_start_marker )
       serialize_path_frames( last_frame_index: last_frame_index, set_start_marker: set_start_marker )
     end
@@ -106,6 +108,10 @@ class Landscape
     #   os_map_name = @map_name.gsub( ' ', '\ ' )
     #   %x( apngasm tmp/#{os_map_name}_ani.png tmp/#{os_map_name}_*.png )
     # end
+  end
+
+  def serialize_path_data( path_data: nil )
+    File.open( "tmp/agent_path.dat", 'w') { |file| file.write( path_data.map{ |way_point| "#{way_point[:x]} #{way_point[:y]} #{way_point[:elevation] + @path_data_visualization_z_offset}" }.join( "\n" ) ) }
   end
 
   def serialize_first_frame( set_start_marker: nil )
