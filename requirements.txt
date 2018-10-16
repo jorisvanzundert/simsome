@@ -1,2 +1,2 @@
 gnuplot
-apngasm (for now, deprecated: will be replaced by ffmpeg in future version)
+ffmpeg

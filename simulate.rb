@@ -7,8 +7,8 @@ def simulate( iterations: 1 )
   iterations.times {
     agent.move( direction: agent.decide[ :direction ] )
   }
-  landscape.serialize( agent: agent, animate: false )
+  landscape.serialize( agent: agent, animate: true )
 end
 
 # MAIN
-simulate( iterations: 3000 )
+simulate( iterations: 50 )

@@ -1,2 +1,3 @@
-tmp/
+tmp*/
 TODO
+.DS_Store
