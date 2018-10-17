@@ -2,7 +2,7 @@ class Agent
 
   attr_reader :name, :x, :y, :path_data
 
-  def initialize( name: nil, x: 0, y: 0, landscape: nil )
+  def initialize( name: nil, x: 0, y: 0, landscape: nil, json_obj: nil )
     # Instance variables
     # What would these be in case of a agent?
     # Propensities I guess, but for what?
@@ -15,12 +15,26 @@ class Agent
     #   Credulity (how much you are prepared to be persuaded, how influentiable you are)
     #   Clarity of aim
     #   Work (how many hours on average you put in)
-    @name = name
-    @x = x
-    @y = y
-    @landscape = landscape
-    @path_data = [ { :x => @x, :y => @y, :elevation => landscape.survey_elevation( agent: self ) } ]
+    if json_obj
+      from_json( json_obj: json_obj )
+    else
+      @name = name
+      @x = x
+      @y = y
+      @landscape = landscape
+      @path_data = [ { :x => @x, :y => @y, :elevation => landscape.survey_elevation( agent: self ) } ]
+    end
+  end
 
+  def to_json
+    { :name => @name, :x => @x, :y => @y, :path_data => @path_data }.to_json
+  end
+
+  def from_json( json_obj: )
+    @name = json_obj["name"]
+    @x = json_obj["x"]
+    @y = json_obj["y"]
+    @path_data = json_obj["path_data"].map{ |way_point| way_point.inject( {} ) { |memo,(k,v)| memo[k.to_sym] = v; memo } }
   end
 
   def estimate_effort( tile_height: 0 )

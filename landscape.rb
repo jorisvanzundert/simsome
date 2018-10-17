@@ -1,6 +1,9 @@
 require_relative 'plasma_fractal'
 require 'open3'
 require 'shellwords'
+require 'json'
+require 'xxhash'
+require 'zip'
 
 class Landscape
 
@@ -12,6 +15,33 @@ class Landscape
     fractal.generate!
     @height_map = fractal.data
     @path_data_visualization_z_offset = 20
+  end
+
+  def name
+    @map_name
+  end
+
+  def to_json
+    { :name => @map_name, :height_map => @height_map }.to_json
+  end
+
+  def store( agent: nil )
+    as_json = "{\"landscape\":#{to_json},\"agent\":#{agent.to_json}}"
+    file_store_name = Time.now.strftime( "%Y%m%d_%H%M%S" ) << "_"<< XXhash.xxh32( @map_name, 8289 ).to_s
+    Dir.mkdir( "data_store/#{file_store_name}" )
+    Zip::File.open( "data_store/#{file_store_name}/#{file_store_name}.zip", Zip::File::CREATE) do |zipfile|
+      zipfile.get_output_stream( "data.json" ) { |file| file.puts( as_json ) }
+    end
+    file_store_name
+  end
+
+  def load( id: )
+    Zip::File.open( "data_store/#{id}/#{id}.zip" ) do |zipfile|
+      json_obj = JSON.parse( zipfile.read( "data.json" ) )
+      @map_name = json_obj["landscape"]["name"]
+      @height_map = json_obj["landscape"]["height_map"]
+      Agent.new( landscape: self, json_obj: json_obj["agent"] )
+    end
   end
 
   def survey_elevation( agent: nil )
@@ -66,7 +96,8 @@ class Landscape
     File.open( "tmp/agent_path.dat", 'w') { |file| file.write( path_data.map{ |way_point| "#{way_point[:x]} #{way_point[:y]} #{way_point[:elevation] + @path_data_visualization_z_offset}" }.join( "\n" ) ) }
   end
 
-  def gnu_command_boilerplate
+  def gnu_command_boilerplate( decorators: nil )
+    sets = decorators.join( "\n      " ) if decorators
     pid = nil
     exit_status = nil
     boiler_plate = %Q(
@@ -78,29 +109,47 @@ class Landscape
       set ylabel "y"
       set style data lines
       set hidden3d
+      #{sets}
     )
     splot = "  splot 'tmp/#{@map_name}_grid_data.dat' u 1:2:3 w lines"
     commands = boiler_plate << splot
   end
 
-  def serialize_frame( index: 0 )
+  def serialize_frame( index: 0, decorators: nil )
     splot = ",\\\n        'tmp/agent_path.dat' u 1:2:3 every ::0::#{index} w lines lc rgb '#ff2222'"
-    commands = gnu_command_boilerplate + splot
+    commands = gnu_command_boilerplate( decorators: decorators ) + splot
     png, stderr, status = Open3.capture3( 'gnuplot', :stdin_data => commands, :binmode => false )
     png
   end
 
+  def create_point_decorator( index:, agent:, color: )
+    marker_xyz = agent.path_data[index].map { |k,v| k==:elevation ? v + @path_data_visualization_z_offset : v }.join( "," )
+    set_marker = "set object circle at #{marker_xyz} size 0.5 fc rgb '#{color}' fs solid 1.0"
+  end
+
+  def start_point_decorator( agent: nil )
+    create_point_decorator( index: 0, agent: agent, color: "#22ff22" )
+  end
+
+  def end_point_decorator( agent: nil )
+    create_point_decorator( index: -1, agent: agent, color: "#2222ff" )
+  end
+
   def serialize_frames( agent: nil, stdin: nil )
+    decorators = [ start_point_decorator( agent: agent ) ]
     end_index = agent.path_data.length - 1
     stdin ? start_index = 0 : start_index = end_index
     (start_index..end_index).each do |index|
-      png, stderr, status = serialize_frame( index: index )
+      if index == end_index
+        decorators << end_point_decorator( agent: agent )
+      end
+      png, stderr, status = serialize_frame( index: index, decorators: decorators )
       print "▪︎" if index % 10 == 0
       stdin ? stdin.write( png ) : File.open( "tmp/#{@map_name}.png", "w" ) { |file| file.write( png ) }
     end
   end
 
-  def serialize( agent: nil, animate: false )
+  def visualize( agent: nil, animate: false )
     File.delete( "tmp/#{@map_name}.mov" ) if File.exist?( "tmp/#{@map_name}.mov" ) #ffmpeg doesn't overwrite
     serialize_grid
     serialize_path_data( agent: agent )
@@ -112,10 +161,10 @@ class Landscape
         end
       end
     end
-    puts "stdin: #{stdin}"
     serialize_frames( agent: agent, stdin: stdin )
     if animate
       message_thread.exit
+      stdin.flush
       stdin.close
       stdout_stderr.close
     end

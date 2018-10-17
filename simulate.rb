@@ -7,8 +7,13 @@ def simulate( iterations: 1 )
   iterations.times {
     agent.move( direction: agent.decide[ :direction ] )
   }
-  landscape.serialize( agent: agent, animate: true )
+  landscape.visualize( agent: agent, animate: false )
+  landscape.store( agent: agent )
 end
 
 # MAIN
-simulate( iterations: 50 )
+sim_id = simulate( iterations: 3000 )
+
+# Reloading the simulation data at a later point
+# landscape = Landscape.new()
+# agent = landscape.load( id: sim_id )
