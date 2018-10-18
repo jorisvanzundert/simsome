@@ -70,4 +70,4 @@ When all that is done and stored in e.g. ``my_simulation.rb`` do ```$>ruby my_si
 
 ### References
 
-<p style="font-size: 80%;">Weisberg, M. and Muldoon, R. (2009) ‘Epistemic Landscapes and the Division of Cognitive Labor’, *Philosophy of Science*, 76(2), pp. 225–252. doi: 10.1086/644786.</p>
+<p><sup>Weisberg, M. and Muldoon, R. (2009) ‘Epistemic Landscapes and the Division of Cognitive Labor’, <i>Philosophy of Science</i>, 76(2), pp. 225–252. doi: 10.1086/644786.</sup></p>
