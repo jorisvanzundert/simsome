@@ -22,7 +22,7 @@ Important: also make sure that you create a `/tmp` and `/data_store` directory i
 * gnuplot (http://www.gnuplot.info/)
 * ffmpeg (https://www.ffmpeg.org/)
 
-No, it really won't work without these. They should be callable from the command line/terminal with `gnuplot` and `ffmpeg`, so make sure you do not install just some GUI version (although most all of those will also install the command line versions, I think).
+No, it really won't work without these. They should be callable from the command line/terminal with `gnuplot` and `ffmpeg`, so make sure you do not install just some GUI version (although most all of those will also install the command line versions, I think). For Gnuplot the X11 terminal and PNGCairo modules should be installed as well. [Homebrew](https://brew.sh/) is really your friend here. Install it if you did not already, then: `brew install gnuplot --with-x11 --with-pngcairo`. 
 
 ## Usage
 
