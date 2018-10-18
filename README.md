@@ -54,7 +54,7 @@ This will generate a nice `PNG` in the `tmp` folder. If you like animations add 
 
 Remember to store your interesting simulation by `simulation_id = landscape.store( agent: your_agent )`. I am lazy and hardly run nil checks, so I'll happily safe an empty landscape for you, but you'll run into a no method for nil thingy when trying to reload it later with `landscape.new(); landscape.load( simulation_id )`. So better add in that agent.
 
-When all that is done and stored in e.g. ``my_simulation.rb`` do ```$>ruby my_simulation.rb``` and sit back. It may look like [this](assets/Brave New Epistemic World.mov).
+When all that is done and stored in e.g. ``my_simulation.rb`` do ```$>ruby my_simulation.rb``` and sit back. It may look like <a href="assets/Brave New Epistemic World.mov">this</a>.
 
 ## The Future
 * I'll consider more nil checks where people may find them handy
