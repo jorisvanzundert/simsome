@@ -2,7 +2,7 @@
 
 Simsome is a project in its initial stages to try to simulate the interaction between software engineers and textual scholars. It was inspired by an article of Michael Weisberg and Ryan Muldoon, "Epistemic Landscapes and the Division of Cognitive Labor" (2009). This project wants to be rather critical of Weisberg and Muldoon's. As [tweeted](https://twitter.com/brandaen/status/1047882860936482817) I rather think what one is proving with any simulation model is one's own biasses. However, this project also wants to celebrate and explore the mostly untrodden potential of STS simulation runs focusing on humanities work. The intent is to see if a plausible model can be found for the love-hate relationship that exists between the humanities and digital c.q. computational methods and technologies.
 
-![Brave New Epistemic Simulations](assets/Brave New Epistemic World.png?raw=true)
+![Brave New Epistemic Simulations](blob/master/assets/Brave New Epistemic World.png)
 
 For now there is only a very basic framework for simulation. The objects available consist of an epistemic landscape (height is a measure of 'epistemic value') and an agent. The landscape is a randomly generated so called [fractal landscape](https://en.wikipedia.org/wiki/Fractal_landscape). More specifically an implementation of the [Diamond-sqaure algorithm](https://en.wikipedia.org/wiki/Diamond-square_algorithm) is used (courtesy https://github.com/tonyc/ruby-plasma-fractal). Some parameters can be tweaked: size as any power of 2, plus one; height seed.
 
