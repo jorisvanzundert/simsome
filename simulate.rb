@@ -2,7 +2,7 @@ require_relative 'landscape'
 require_relative 'agent'
 
 def simulate( iterations: 1 )
-  landscape = Landscape.new( name: 'Brave New World' )
+  landscape = Landscape.new( name: 'Brave New Epistemic World 2' )
   agent = Agent.new( name: 'Alquin', x: 80, y: 80, landscape: landscape )
   iterations.times {
     agent.move( direction: agent.decide[ :direction ] )
@@ -12,8 +12,10 @@ def simulate( iterations: 1 )
 end
 
 # MAIN
-sim_id = simulate( iterations: 3000 )
+simulation_id = simulate( iterations: 300 )
 
-# Reloading the simulation data at a later point
+# Reloading the simulation data at a later point…
+#
 # landscape = Landscape.new()
-# agent = landscape.load( id: sim_id )
+# agent = landscape.load( id: simulation_id )
+#
