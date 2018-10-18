@@ -101,7 +101,7 @@ class Landscape
     pid = nil
     exit_status = nil
     boiler_plate = %Q(
-      set terminal png size 4096,3072
+      set terminal pngcairo size 4096,3072
       set output
       set zrange[150:650]
       set view 35, 130

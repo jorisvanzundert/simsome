@@ -6,7 +6,7 @@ Simsome is a project in its initial stages to try to simulate the interaction be
 
 For now there is only a very basic framework for simulation. The objects available consist of an epistemic landscape (height is a measure of 'epistemic value') and an agent. The landscape is a randomly generated so called [fractal landscape](https://en.wikipedia.org/wiki/Fractal_landscape). More specifically an implementation of the [Diamond-sqaure algorithm](https://en.wikipedia.org/wiki/Diamond-square_algorithm) is used (courtesy https://github.com/tonyc/ruby-plasma-fractal). Some parameters can be tweaked: size as any power of 2, plus one; height seed.
 
-The random map provides an epistemic landscape for an agent to find his way through. Essentially the goal of the agent is to move towards higher ground (representing more epistemic value). I have just started out modelling how the agent decides to move where. For now there are mostly a lot of thoughts (see code comments in `landscape.rb` and `agent.rb`) on how this may happen. The actual algorithm for now models conservative choice: the agent wants to spend as little effort as possible and prefers each step to move to higher grounds. In case of a local optimum the least 'epistemic loss' is chosen to move away from the optimum again. Quite logically this still results in much semi-deadlocks where an agent will endlessly circle some local optimum. As said: I am only in the initial stages of modelling this.
+The random map provides an epistemic landscape for an agent to find his/her way through. Essentially the goal of the agent is to move towards higher ground (representing more epistemic value). I have just started out modelling how the agent decides to move where. For now there are mostly a lot of thoughts (see code comments in `landscape.rb` and `agent.rb`) on how this may happen. The actual algorithm for now models conservative choice: the agent wants to spend as little effort as possible and prefers each step to move to higher grounds. In case of a local optimum the least 'epistemic loss' is chosen to move away from the optimum again. Quite logically this still results in much semi-deadlocks where an agent will endlessly circle some local optimum. As said: I am only in the initial stages of modelling this.
 
 ## Installing
 Is cloning for now…
@@ -22,7 +22,7 @@ Important: also make sure that you create a `/tmp` and `/data_store` directory i
 * gnuplot (http://www.gnuplot.info/)
 * ffmpeg (https://www.ffmpeg.org/)
 
-No, it really won't work without these. They should be callable from the command line/terminal with `gnuplot` and `ffmpeg`, so make sure you do not install just some GUI version (although most all of those will also install the command line versions, I think). For Gnuplot the X11 terminal and PNGCairo modules should be installed as well. [Homebrew](https://brew.sh/) is really your friend here. Install it if you did not already, then: `brew install gnuplot --with-x11 --with-pngcairo`. 
+No, it really won't work without these. They should be callable from the command line/terminal with `gnuplot` and `ffmpeg`, so make sure you do not install just some GUI version (although most all of those will also install the command line versions, I think). For Gnuplot the X11 terminal and PNGCairo modules should be installed as well. [Homebrew](https://brew.sh/) is really your friend here. Install it if you did not already, then: `brew install gnuplot --with-x11 --with-pngcairo`.
 
 ## Usage
 
@@ -50,11 +50,11 @@ If you want to see what the agent was up to, do:
 
 `landscape.visualize( :agent = agent )`
 
-This will generate a nice `PNG` in the `tmp` folder. If you like animations add `:animate = true` to generate a `.mov` there. Generating animations takes a little longer obvious (a mere split second for a picture versus 56.135 seconds for an animation of 300 moves in a 129 by 129 landscape at 4096 by 3072 image resolution) but it is fun.
+This will generate a nice `PNG` in the `tmp` folder. If you like animations add `:animate = true` to generate a `.mov` there. Generating animations takes a little longer obvious (a mere split second for a picture versus 225.112 seconds, or 3'45", for an animation of 300 moves in a 129 by 129 landscape at 800 by 600 image resolution) but it is fun.
 
 Remember to store your interesting simulation by `simulation_id = landscape.store( agent: your_agent )`. I am lazy and hardly run nil checks, so I'll happily safe an empty landscape for you, but you'll run into a no method for nil thingy when trying to reload it later with `landscape.new(); landscape.load( simulation_id )`. So better add in that agent.
 
-When all that is done and stored in e.g. ``my_simulation.rb`` do ```$>ruby my_simulation.rb``` and sit back.
+When all that is done and stored in e.g. ``my_simulation.rb`` do ```$>ruby my_simulation.rb``` and sit back. It may look like [this](assets/Brave New Epistemic World.mov).
 
 ## The Future
 * I'll consider more nil checks where people may find them handy
